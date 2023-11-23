@@ -20,13 +20,13 @@ import java.time.LocalDateTime;
 @Table(name = "json_request")
 public class JsonRequestEntity extends CommonBaseEntity {
 
-    @Column(name = "requestId",unique = true)
+    @Column(name = "requestId", unique = true)
     @JsonAlias({"requestId", "commandId"})
     @JsonProperty("requestId")
     private String requestId;
 
     @Column(name = "producerId")
-    @JsonAlias({"producerId", "player"})
+    @JsonAlias({"player", "producerId", "userId"})
     @JsonProperty("producerId")
     private String producerId;
 
@@ -35,6 +35,7 @@ public class JsonRequestEntity extends CommonBaseEntity {
     private LocalDateTime timestamp;
 
     @Column(name = "sessionId", unique = true)
+    @JsonAlias({"sessionId", "session"})
     @JsonProperty("sessionId")
     private Long sessionId;
 

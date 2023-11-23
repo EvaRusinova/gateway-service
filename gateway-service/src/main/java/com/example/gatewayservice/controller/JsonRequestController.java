@@ -21,7 +21,8 @@ public class JsonRequestController {
     @PostMapping("/insert")
     public ResponseEntity<String> insertJsonRequest(@Valid @RequestBody JsonRequestEntity jsonRequest) {
         jsonRequestService.processAndInsertJsonRequest(jsonRequest);
-        return ResponseEntity.ok("Request processed successfully");    }
+        return ResponseEntity.ok("Request processed successfully");
+    }
 
     @PostMapping("/find")
     public ResponseEntity<List<String>> findJsonRequest(@RequestBody JsonRequestEntity jsonRequest) {

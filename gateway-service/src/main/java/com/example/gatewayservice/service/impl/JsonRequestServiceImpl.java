@@ -26,24 +26,35 @@ import java.util.stream.Collectors;
 public class JsonRequestServiceImpl implements JsonRequestService {
     private static final Logger logger = LoggerFactory.getLogger(JsonRequestServiceImpl.class);
 
-    private  final JsonRequestRepository jsonRequestRepository;
+    private final JsonRequestRepository jsonRequestRepository;
     private final RabbitTemplate rabbitTemplate;
     private final RestTemplate restTemplate;
 
     @Value("${other.internal.service.url}")
     private String otherInternalServiceUrl;
 
+    @Value("${rabbitmq.queues.json-request-q}")
+    private String jsonRequestQueue;
+
+    @Value("${rabbitmq.routing-keys.json-request-rk}")
+    private String jsonRequestRoutingKey;
+
+
     @Async
-    public void processAndInsertJsonRequest(JsonRequestEntity jsonRequest) {
+    public CompletableFuture<Void> processAndInsertJsonRequest(JsonRequestEntity jsonRequest) {
         try {
             checkAndCreateSession(jsonRequest);
             // Simulate asynchronous REST API call to OTHER_INTERNAL_SERVICE
-            CompletableFuture.runAsync(() -> {
+            CompletableFuture<Void> restCallFuture = CompletableFuture.runAsync(() -> {
                 restTemplate.postForObject(otherInternalServiceUrl, jsonRequest, String.class);
             });
-
+            restCallFuture.join(); // Wait for the asynchronous REST call to complete
+            // Publish RabbitMQ message synchronously
+            rabbitTemplate.convertAndSend(jsonRequestQueue, jsonRequestRoutingKey, jsonRequest);
+            return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
             logger.error("An error occurred while processing and inserting JSON request", e);
+            return CompletableFuture.failedFuture(e);
         }
     }
 
@@ -67,9 +78,9 @@ public class JsonRequestServiceImpl implements JsonRequestService {
     }
 
 
-    private String generateRequestId() {
-        return UUID.randomUUID().toString();
-    }
+//    private String generateRequestId() {
+//        return UUID.randomUUID().toString();
+//    }
 
     @Async
     public CompletableFuture<List<String>> processAndFindJsonRequest(JsonRequestEntity jsonRequest) {
