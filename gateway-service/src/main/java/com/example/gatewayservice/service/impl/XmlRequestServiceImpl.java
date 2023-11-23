@@ -13,15 +13,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 public class XmlRequestServiceImpl implements XmlRequestService {
-    private static final Logger logger = LoggerFactory.getLogger(JsonRequestServiceImpl.class);
-
+    private static final Logger logger = LoggerFactory.getLogger(XmlRequestServiceImpl.class);
 
     private final XmlRequestRepository xmlRequestRepository;
     private final RabbitTemplate rabbitTemplate;
@@ -30,17 +29,23 @@ public class XmlRequestServiceImpl implements XmlRequestService {
     @Value("${other.internal.service.url}")
     private String otherInternalServiceUrl;
 
+    @Value("${rabbitmq.queues.xml-request-q}")
+    private String xmlRequestQueue;
+
+    @Value("${rabbitmq.routing-keys.xml-request-rk}")
+    private String xmlRequestRoutingKey;
+
     @Async
     public CompletableFuture<Void> processXmlCommand(XmlRequestEntity xmlRequest) {
         try {
-            XmlRequestEntity savedSession = checkAndCreateSession(xmlRequest);
+            checkAndCreateSession(xmlRequest);
             // Simulate asynchronous REST API call to OTHER_INTERNAL_SERVICE
-            CompletableFuture.runAsync(() -> {
+            CompletableFuture<Void> restCallFuture = CompletableFuture.runAsync(() -> {
                 restTemplate.postForObject(otherInternalServiceUrl, xmlRequest, String.class);
             });
-
-            xmlRequestRepository.save(savedSession);
-            rabbitTemplate.convertAndSend("xml-command-exchange", "xml-command-routing-key", savedSession);
+            restCallFuture.join(); // Wait for the asynchronous REST call to complete
+            // Publish RabbitMQ message synchronously
+            rabbitTemplate.convertAndSend(xmlRequestQueue, xmlRequestRoutingKey, xmlRequest);
             return CompletableFuture.completedFuture(null);
         } catch (Exception e) {
             logger.error("An error occurred while processing and saving XML request", e);
@@ -54,32 +59,25 @@ public class XmlRequestServiceImpl implements XmlRequestService {
             return CompletableFuture.completedFuture(commandIds);
         } catch (Exception e) {
             logger.error("An error occurred while getting XML requests", e);
-            return CompletableFuture.failedFuture(e);
+            return CompletableFuture.completedFuture(Collections.emptyList());
         }
     }
 
-    private XmlRequestEntity checkAndCreateSession(XmlRequestEntity xmlRequest) {
+    private void checkAndCreateSession(XmlRequestEntity xmlRequest) {
         Long sessionId = xmlRequest.getSessionId();
-        boolean sessionExists = xmlRequestRepository.existsBySessionId(sessionId);
+        List<XmlRequestEntity> existingSessions = xmlRequestRepository.findBySessionId(sessionId);
 
-        if (!sessionExists) {
-            String requestId = generateRequestId();
-            String producerId = xmlRequest.getProducerId();
+        if (existingSessions.isEmpty()) {
+            String requestId = xmlRequest.getRequestId();
             XmlRequestEntity newSession = XmlRequestEntity.builder()
                     .sessionId(sessionId)
                     .requestId(requestId)
                     .timestamp(LocalDateTime.now())
-                    .producerId(producerId)
+                    .producerId(xmlRequest.getProducerId()) // Set the producerId from the incoming request
                     .build();
-
             xmlRequestRepository.save(newSession);
-            return newSession;
         } else {
-            throw new RuntimeException("Session already exists with ID: " + sessionId);
+            logger.warn("Session already exists with ID: {}", sessionId);
         }
-    }
-
-    private String generateRequestId() {
-        return UUID.randomUUID().toString();
     }
 }

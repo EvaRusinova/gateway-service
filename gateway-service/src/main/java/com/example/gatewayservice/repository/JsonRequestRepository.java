@@ -7,8 +7,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface JsonRequestRepository  extends JpaRepository<JsonRequestEntity, Long> {
-    boolean existsBySessionId(Long sessionId);
-    List<Long> findSessionIdsByProducerId(String userId);
+public interface JsonRequestRepository extends JpaRepository<JsonRequestEntity, Long> {
+//    boolean existsBySessionId(Long sessionId);
+
     List<JsonRequestEntity> findBySessionId(Long sessionId);
+
+    List<JsonRequestEntity> findByProducerId(String producerId);
 }

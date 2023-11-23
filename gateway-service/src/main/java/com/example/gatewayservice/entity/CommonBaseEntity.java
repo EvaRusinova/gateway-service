@@ -23,9 +23,6 @@ public class CommonBaseEntity implements Serializable {
     @Column(name = "requestId")
     private String requestId; // Same as commandId in XML
 
-    @Column(name = "userId")
-    private String userId;
-
     @CreationTimestamp
     @Column(name = "timestamp")
     private LocalDateTime timestamp;
@@ -33,9 +30,8 @@ public class CommonBaseEntity implements Serializable {
     @Column(name = "producerId")
     private String producerId; // Same as player in XML
 
-
     @Column(name = "sessionId")
-    private Long sessionId;
+    private Long sessionId; // Same as session in XML
 
     @JsonIgnore
     @Column(name = "response")

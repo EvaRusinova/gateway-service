@@ -6,6 +6,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface JsonRequestService {
-void processAndInsertJsonRequest(JsonRequestEntity jsonRequest);
+    CompletableFuture<Void> processAndInsertJsonRequest(JsonRequestEntity jsonRequest);
     CompletableFuture<List<String>> processAndFindJsonRequest(JsonRequestEntity jsonRequest);
 }

@@ -9,6 +9,10 @@ import java.util.List;
 @Repository
 public interface XmlRequestRepository extends JpaRepository<XmlRequestEntity, Long> {
     List<String> findCommandIdsBySessionId(Long sessionId);
-    List<Long> findSessionIdsByProducerId(String userId);
-    boolean existsBySessionId(Long sessionId);
+
+//    boolean existsBySessionId(Long sessionId);
+
+    List<XmlRequestEntity> findByProducerId(String producerId);
+
+    List<XmlRequestEntity> findBySessionId(Long sessionId);
 }

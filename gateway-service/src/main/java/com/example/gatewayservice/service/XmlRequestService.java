@@ -7,5 +7,6 @@ import java.util.concurrent.CompletableFuture;
 
 public interface XmlRequestService {
     CompletableFuture<Void> processXmlCommand(XmlRequestEntity xmlRequest);
+
     CompletableFuture<List<String>> getXmlRequests(Long sessionId);
 }

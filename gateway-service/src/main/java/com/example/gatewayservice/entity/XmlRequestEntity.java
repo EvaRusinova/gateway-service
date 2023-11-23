@@ -26,7 +26,7 @@ public class XmlRequestEntity extends CommonBaseEntity {
     private String requestId;
 
     @Column(name = "producerId")
-    @JsonAlias({"player","producerId"})
+    @JsonAlias({"player", "producerId", "userId"})
     @JsonProperty("player")
     private String producerId;
 
@@ -35,6 +35,7 @@ public class XmlRequestEntity extends CommonBaseEntity {
     private LocalDateTime timestamp;
 
     @Column(name = "sessionId", unique = true)
+    @JsonAlias({"sessionId", "session"})
     @JsonProperty("session")
     private Long sessionId;
 

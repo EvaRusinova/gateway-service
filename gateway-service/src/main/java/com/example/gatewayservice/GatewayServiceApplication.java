@@ -16,31 +16,38 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @EnableAsync
 public class GatewayServiceApplication implements CommandLineRunner {
-	private final JsonRequestService jsonRequestService;
-	private final XmlRequestService xmlRequestService;
-	public static void main(String[] args) {
-		SpringApplication.run(GatewayServiceApplication.class, args);
-	}
+    private final JsonRequestService jsonRequestService;
+    private final XmlRequestService xmlRequestService;
 
-	@Override
-	public void run(String... args) {
-		JsonRequestEntity jsonRequest = JsonRequestEntity.builder()
-				.requestId("1234er")
-				.producerId("123456")
-				.sessionId(1234L)
-				.timestamp(LocalDateTime.now())
-				.build();
-		jsonRequestService.processAndInsertJsonRequest(jsonRequest);
+    public static void main(String[] args) {
+        SpringApplication.run(GatewayServiceApplication.class, args);
+    }
 
-		XmlRequestEntity xmlRequest = XmlRequestEntity.builder()
-				.requestId("3434")
-				.producerId("34345")
-				.sessionId(4321L)
-				.timestamp(LocalDateTime.now())
-				.build();
+    @Override
+    public void run(String... args) {
+        JsonRequestEntity jsonRequest = JsonRequestEntity.builder()
+                .requestId("1234er")
+                .producerId("123456")
+                .sessionId(1234L)
+                .timestamp(LocalDateTime.now())
+                .build();
+        jsonRequestService.processAndInsertJsonRequest(jsonRequest);
 
-		xmlRequestService.processXmlCommand(xmlRequest);
+        JsonRequestEntity jsonRequestTwo = JsonRequestEntity.builder()
+                .requestId("12345er")
+                .producerId("123456")
+                .sessionId(5454L)
+                .timestamp(LocalDateTime.now())
+                .build();
+        jsonRequestService.processAndInsertJsonRequest(jsonRequestTwo);
 
+        XmlRequestEntity xmlRequest = XmlRequestEntity.builder()
+                .requestId("3434")
+                .producerId("34345")
+                .sessionId(4321L)
+                .timestamp(LocalDateTime.now())
+                .build();
 
-	}
+        xmlRequestService.processXmlCommand(xmlRequest);
+    }
 }
