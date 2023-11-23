@@ -16,7 +16,6 @@ import org.springframework.web.client.RestTemplate;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -76,11 +75,6 @@ public class JsonRequestServiceImpl implements JsonRequestService {
             logger.warn("Session already exists with ID: {}", sessionId);
         }
     }
-
-
-//    private String generateRequestId() {
-//        return UUID.randomUUID().toString();
-//    }
 
     @Async
     public CompletableFuture<List<String>> processAndFindJsonRequest(JsonRequestEntity jsonRequest) {
